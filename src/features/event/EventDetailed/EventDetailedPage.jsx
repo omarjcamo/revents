@@ -6,8 +6,6 @@ import EventDetailedInfo from './EventDetailedInfo'
 import EventDetailedChat from './EventDetailedChat'
 import EventDetailedSidebar from './EventDetailedSidebar'
 
-
-
 const EventDetailedPage = ({event}) => {
   return (
     <Grid>
