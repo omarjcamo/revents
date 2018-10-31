@@ -3,6 +3,7 @@ import testReducers from '../../features/testarea/testReducer'
 import eventReducer from '../../features/event/eventReducer'
 import modalsReducer from '../../features/modals/modalReducer'
 import authReducer from '../../features/auth/authReducer'
+import asyncReducer from '../../features/async/asyncReducer'
 import {reducer as FormReducer} from 'redux-form'
 
 const rootReducer = combineReducers({
@@ -10,7 +11,8 @@ const rootReducer = combineReducers({
   events: eventReducer,
   form: FormReducer,
   modals: modalsReducer,
-  auth: authReducer
+  auth: authReducer,
+  async: asyncReducer
 });
 
 export default rootReducer;
