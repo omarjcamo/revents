@@ -6,18 +6,35 @@ import {Link} from 'react-router-dom'
 import format from 'date-fns/format'
 import LazyLoad from 'react-lazyload';
 import differenceInYears from 'date-fns/difference_in_years';
-import {Button, Card, Grid, Header, Icon, Image, Item, List, Menu, Segment} from "semantic-ui-react";
+import {Button, Card, Grid, Header, Icon, Image, Item, List, Segment, Tab} from "semantic-ui-react";
 import {userDetailedQuery} from "../userQueries";
+import {getUserEvents} from "../userActions";
 import LoadingComponent from '../../../app/layout/LoadingComponent'
+
+const panes = [
+  {menuItem: 'All Events', pane: {key: 'allEvents'}},
+  {menuItem: 'Past Events', pane: {key: 'pastEvents'}},
+  {menuItem: 'Future Events', pane: {key: 'futureEvents'}},
+  {menuItem: 'Hosting Events', pane: {key: 'hostingEvents'}},
+];
 
 class UserDetailedPage extends Component {
 
+  async componentDidMount() {
+    let events = await this.props.getUserEvents(this.props.userUid);
+    console.log(events);
+  }
+
+  changeTab = (e, data) => {
+    this.props.getUserEvents(this.props.userUid, data.activeIndex);
+  };
+
   render() {
-    const {user, photos, auth, match, requesting} = this.props;
+    const {user, photos, auth, match, requesting, events, eventsLoading} = this.props;
     const iscurrentUser = auth.uid === match.params.id;
     const loading = Object.values(requesting).some(a => a === true);
 
-    if(loading){
+    if (loading) {
       return <LoadingComponent inverted={true}/>;
     }
 
@@ -107,41 +124,28 @@ class UserDetailedPage extends Component {
         </Grid.Column>
 
         <Grid.Column width={12}>
-          <Segment attached>
+          <Segment attached loading={eventsLoading}>
             <Header icon='calendar' content='Events'/>
-            <Menu secondary pointing>
-              <Menu.Item name='All Events' active/>
-              <Menu.Item name='Past Events'/>
-              <Menu.Item name='Future Events'/>
-              <Menu.Item name='Events Hosted'/>
-            </Menu>
+            <Tab
+              panes={panes} menu={{secondary: true, pointing: true}}
+              onTabChange={(e, data) => this.changeTab(e, data)}/>
+            <br/>
 
             <Card.Group itemsPerRow={5}>
-
-              <Card>
-                <Image src={'/assets/categoryImages/drinks.jpg'}/>
-                <Card.Content>
-                  <Card.Header textAlign='center'>
-                    Event Title
-                  </Card.Header>
-                  <Card.Meta textAlign='center'>
-                    28th March 2018 at 10:00 PM
-                  </Card.Meta>
-                </Card.Content>
-              </Card>
-
-              <Card>
-                <Image src={'/assets/categoryImages/drinks.jpg'}/>
-                <Card.Content>
-                  <Card.Header textAlign='center'>
-                    Event Title
-                  </Card.Header>
-                  <Card.Meta textAlign='center'>
-                    28th March 2018 at 10:00 PM
-                  </Card.Meta>
-                </Card.Content>
-              </Card>
-
+              {
+                events && events.map(event => (
+                  <Card key={event.id} as={Link} to={`/event/${event.id}`}>
+                    <Image src={`/assets/categoryImages/${event.category}.jpg`}/>
+                    <Card.Content>
+                      <Card.Header textAlign='center'>{event.title}</Card.Header>
+                      <Card.Meta textAlign='center'>
+                        <div>{event.date && format(event.date.toDate(), 'D MMM YYYY')}</div>
+                        <div>{event.date && format(event.date.toDate(), 'h:mm A')}</div>
+                      </Card.Meta>
+                    </Card.Content>
+                  </Card>
+                ))
+              }
             </Card.Group>
           </Segment>
         </Grid.Column>
@@ -165,14 +169,15 @@ const mapState = (state, ownProps) => {
   return {
     user: profile,
     userUid,
+    eventsLoading: state.async.loading,
     auth: state.firebase.auth,
     photos: state.firestore.ordered.photos,
-    requesting: state.firestore.status.requesting
+    requesting: state.firestore.status.requesting,
+    events: state.events
   }
 };
 
-const actions = {};
-
+const actions = {getUserEvents};
 
 export default compose(
   connect(mapState, actions),
