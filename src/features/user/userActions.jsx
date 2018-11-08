@@ -189,3 +189,44 @@ export const getUserEvents = (userUid, activeTab) =>
       dispatch(asyncActionError())
     }
   };
+
+export const followUser = userToFollow =>
+  async (dispatch, getState, {getFirestore}) => {
+    const firestore = getFirestore();
+    const user = firestore.auth().currentUser;
+    try{
+      dispatch(asyncActionStart());
+      await firestore.set({
+        collection: 'users',
+        doc: user.uid,
+        subcollections: [{collection: 'following', doc: userToFollow.id}]
+      }, {
+        city: userToFollow.city || 'unknown',
+        displayName: userToFollow.displayName,
+        photoURL: userToFollow.photoURL || '/assets/user.png'
+      });
+      dispatch(asyncActionFinish());
+    }catch(error){
+      console.log(error);
+      dispatch(asyncActionError());
+    }
+  };
+
+export const unfollowUser = userToUnfollow =>
+  async (dispatch, getState, {getFirestore}) => {
+    const firestore = getFirestore();
+    const user = firestore.auth().currentUser;
+    console.log(userToUnfollow);
+    try{
+      dispatch(asyncActionStart());
+      await firestore.delete({
+        collection: 'users',
+        doc: user.uid,
+        subcollections: [{collection: 'following', doc: userToUnfollow.id}]
+      });
+      dispatch(asyncActionFinish());
+    }catch(error){
+      console.log(error);
+      dispatch(asyncActionError());
+    }
+  };

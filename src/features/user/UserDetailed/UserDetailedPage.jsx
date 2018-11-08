@@ -8,7 +8,7 @@ import LazyLoad from 'react-lazyload';
 import differenceInYears from 'date-fns/difference_in_years';
 import {Button, Card, Grid, Header, Icon, Image, Item, List, Segment, Tab} from "semantic-ui-react";
 import {userDetailedQuery} from "../userQueries";
-import {getUserEvents} from "../userActions";
+import {getUserEvents, followUser, unfollowUser} from "../userActions";
 import LoadingComponent from '../../../app/layout/LoadingComponent'
 
 const panes = [
@@ -22,7 +22,6 @@ class UserDetailedPage extends Component {
 
   async componentDidMount() {
     let events = await this.props.getUserEvents(this.props.userUid);
-    console.log(events);
   }
 
   changeTab = (e, data) => {
@@ -30,9 +29,10 @@ class UserDetailedPage extends Component {
   };
 
   render() {
-    const {user, photos, auth, match, requesting, events, eventsLoading} = this.props;
+    const {user, photos, auth, match, requesting, events, eventsLoading, followUser, following, unfollowUser} = this.props;
     const iscurrentUser = auth.uid === match.params.id;
     const loading = Object.values(requesting).some(a => a === true);
+    const isAlreadyFollowing = following && !iscurrentUser && Object.values(following).some(a => a.id === user.id);
 
     if (loading) {
       return <LoadingComponent inverted={true}/>;
@@ -101,7 +101,13 @@ class UserDetailedPage extends Component {
           <Segment>
             {iscurrentUser ?
               <Button as={Link} to='/settings' color='teal' fluid basic content='Edit Profile'/> :
-              <Button color='teal' fluid basic content='Follow User'/>}
+              isAlreadyFollowing ?
+                <Button color='teal'
+                        loading={eventsLoading}
+                        fluid basic content='Unfollow User' onClick={() => unfollowUser(user)}/> :
+                <Button color='teal'
+                        loading={eventsLoading}
+                        fluid basic content='Follow User' onClick={() => followUser(user)}/>}
           </Segment>
         </Grid.Column>
 
@@ -172,12 +178,13 @@ const mapState = (state, ownProps) => {
     eventsLoading: state.async.loading,
     auth: state.firebase.auth,
     photos: state.firestore.ordered.photos,
+    following: state.firestore.ordered.following,
     requesting: state.firestore.status.requesting,
     events: state.events
   }
 };
 
-const actions = {getUserEvents};
+const actions = {getUserEvents, followUser, unfollowUser};
 
 export default compose(
   connect(mapState, actions),

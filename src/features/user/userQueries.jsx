@@ -11,6 +11,12 @@ export const userDetailedQuery = ({auth, userUid}) => {
         doc: userUid,
         subcollections: [{collection: 'photos'}],
         storeAs: 'photos'
+      },
+      {
+        collection: 'users',
+        doc: auth.uid,
+        subcollections: [{collection: 'following'}],
+        storeAs: 'following'
       }
     ];
   } else {
@@ -24,3 +30,20 @@ export const userDetailedQuery = ({auth, userUid}) => {
     ];
   }
 };
+
+export const peopleDashboardQuery = ({userUid}) => {
+  return [
+    {
+      collection: 'users',
+      doc: userUid,
+      subcollections: [{collection: 'following'}],
+      storeAs: 'following'
+    },
+    {
+      collection: 'users',
+      doc: userUid,
+      subcollections: [{collection: 'followers'}],
+      storeAs: 'followers'
+    }
+  ]
+}

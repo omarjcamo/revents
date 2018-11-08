@@ -64,3 +64,64 @@ exports.cancelActivity = functions.firestore.document('events/{eventId}')
       })
   });
 
+exports.followUser = functions.firestore.document('users/{userId}/following/{followingId}')
+  .onCreate((followingUser, context) => {
+
+    const followingId = context.params.followingId;
+    let userId = context.params.userId;
+
+    return admin.firestore().collection('users').doc(userId).get().then(snap => {
+
+      const userFollower = snap.data();
+      console.log({userFollower});
+
+      const userFollowerData = {
+        city: userFollower.city || 'unknown',
+        displayName: userFollower.displayName,
+        photoURL: userFollower.photoURL || '/assets/user.png'
+      };
+      console.log({userFollowerData});
+
+
+      return admin
+        .firestore()
+        .collection('users')
+        .doc(followingId)
+        .collection('followers')
+        .doc(userId)
+        .set(userFollowerData)
+        .then((docRef) => {
+          return console.log('Follower created with id: ', docRef.id)
+        })
+        .catch((err) => {
+          return console.log('Error adding follower', err);
+        })
+    })
+      .catch((err) => {
+        return console.log('Error adding follower', err);
+      });
+
+  });
+
+exports.unfollowUser = functions.firestore.document('users/{userId}/following/{followingId}')
+  .onDelete((followingUser, context) => {
+
+    const followingId = context.params.followingId;
+    let userId = context.params.userId;
+
+    return admin
+      .firestore()
+      .collection('users')
+      .doc(followingId)
+      .collection('followers')
+      .doc(userId)
+      .delete()
+      .then((docRef) => {
+        return console.log('Follower deleted with id: ', docRef)
+      })
+      .catch((err) => {
+        return console.log('Error deleting follower', err);
+      })
+
+  });
+
