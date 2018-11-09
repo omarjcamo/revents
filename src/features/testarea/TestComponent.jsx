@@ -3,7 +3,7 @@ import {connect} from 'react-redux'
 import {Button} from 'semantic-ui-react'
 import Script from 'react-load-script'
 import PlacesAutocomplete, {geocodeByAddress, getLatLng} from 'react-places-autocomplete'
-import {incrementAsync, decrementAsync,} from "./testActions";
+import {incrementAsync, decrementAsync, testPermission} from "./testActions";
 import {openModal} from "../modals/modalActions";
 
 class TestComponent extends Component {
@@ -37,7 +37,7 @@ class TestComponent extends Component {
   onChange = (address) => this.setState({address})
 
   render() {
-    const {data, incrementAsync, decrementAsync, openModal, loading} = this.props;
+    const {data, incrementAsync, decrementAsync, loading, testPermission} = this.props;
     const inputProps = {
       value: this.state.address,
       onChange: this.onChange,
@@ -51,7 +51,7 @@ class TestComponent extends Component {
         <h1>Test Area: {data}</h1>
         <Button loading={loading} onClick={incrementAsync} color="green" content="Increment"/>
         <Button loading={loading} onClick={decrementAsync} color="red" content="Decrement"/>
-        <Button onClick={() => openModal('TestModal', {data: 43})} color="teal" content="Open Modal"/>
+        <Button onClick={testPermission} color="teal" content="Test Permission"/>
         <br/><br/>
         <form onSubmit={this.handleFormSubmit}>
           {this.state.scriptLoaded &&
@@ -71,7 +71,8 @@ const mapStateToProps = (state) => ({
 const actions = {
   incrementAsync,
   decrementAsync,
-  openModal
+  openModal,
+  testPermission
 };
 
 export default connect(mapStateToProps, actions)(TestComponent);

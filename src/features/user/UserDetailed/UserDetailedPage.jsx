@@ -5,6 +5,7 @@ import {firestoreConnect, isEmpty} from 'react-redux-firebase';
 import {Link} from 'react-router-dom'
 import format from 'date-fns/format'
 import LazyLoad from 'react-lazyload';
+import {toastr} from 'react-redux-toastr';
 import differenceInYears from 'date-fns/difference_in_years';
 import {Button, Card, Grid, Header, Icon, Image, Item, List, Segment, Tab} from "semantic-ui-react";
 import {userDetailedQuery} from "../userQueries";
@@ -21,7 +22,12 @@ const panes = [
 class UserDetailedPage extends Component {
 
   async componentDidMount() {
-    let events = await this.props.getUserEvents(this.props.userUid);
+    let user = await this.props.firestore.get(`users/${this.props.match.params.id}`);
+    if(!user.exists){
+      toastr.error('Not Found', 'The is not the user you are looking for');
+      this.props.history.push('/error');
+    }
+    await this.props.getUserEvents(this.props.userUid);
   }
 
   changeTab = (e, data) => {
@@ -31,7 +37,7 @@ class UserDetailedPage extends Component {
   render() {
     const {user, photos, auth, match, requesting, events, eventsLoading, followUser, following, unfollowUser} = this.props;
     const iscurrentUser = auth.uid === match.params.id;
-    const loading = Object.values(requesting).some(a => a === true);
+    const loading = requesting[`users/${match.params.id}`];
     const isAlreadyFollowing = following && !iscurrentUser && Object.values(following).some(a => a.id === user.id);
 
     if (loading) {
