@@ -155,7 +155,7 @@ class PhotosPage extends Component {
         <Card.Group itemsPerRow={5}>
           <Card>
             <Image src={profile.photoURL || '/assets/user.png'}/>
-            <Button positive>Main Photo</Button>
+            <Button positive >Main Photo</Button>
           </Card>
 
           {
@@ -165,7 +165,7 @@ class PhotosPage extends Component {
                   src={photo.url}
                 />
                 <div className='ui two buttons'>
-                  <Button basic color='green' onClick={this.handleSetMainPhoto(photo)}>Main</Button>
+                  <Button basic color='green' loading={loading} onClick={this.handleSetMainPhoto(photo)}>Main</Button>
                   <Button basic icon='trash' color='red' onClick={this.handlePhotoDelete(photo)}/>
                 </div>
               </Card>
